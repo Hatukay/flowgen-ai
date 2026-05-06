@@ -7,6 +7,7 @@ const tasksRouter    = require('./routes/tasks');
 const runsRouter     = require('./routes/runs');
 const chatRouter     = require('./routes/chat');
 const workflowRouter = require('./routes/workflow');
+const agentRouter    = require('./routes/agent');
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/chat',     chatRouter);
 app.use('/api/workflow', workflowRouter);
 app.use('/api/tasks',    tasksRouter);
 app.use('/api/runs',     runsRouter);
+app.use('/api/agent',    agentRouter);
 
 // ─── 404 Handler ──────────────────────────────────────────────────────────────
 app.use((req, res) => {

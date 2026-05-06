@@ -1,12 +1,17 @@
 import { createMockPlan, mockRuns, mockTasks, mockTestResult } from "../data/mockData";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-const REQUEST_TIMEOUT_MS = 900;
+const REQUEST_TIMEOUT_MS = 5000;
 
 function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+/**
+ * Generic request wrapper with mock fallback.
+ * When the backend is reachable, uses the real API response.
+ * Falls back to mock data when the backend is offline (hackathon-safe).
+ */
 async function request(path, options, fallback, fallbackDelay = 150) {
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -25,7 +30,14 @@ async function request(path, options, fallback, fallbackDelay = 150) {
       throw new Error(`API error ${response.status}`);
     }
 
-    return await response.json();
+    const json = await response.json();
+
+    // Unwrap backend envelope { success, data } when present
+    if (json.success !== undefined && json.data !== undefined) {
+      return json.data;
+    }
+
+    return json;
   } catch {
     await wait(fallbackDelay);
     return fallback();
@@ -63,5 +75,5 @@ export async function approveTask(id) {
 }
 
 export async function testTask(id) {
-  return request(`/api/test-task/${id}`, { method: "POST" }, () => mockTestResult, 450);
+  return request(`/api/tasks/${id}/test`, { method: "POST" }, () => mockTestResult, 450);
 }
