@@ -8,6 +8,7 @@ const runsRouter     = require('./routes/runs');
 const chatRouter     = require('./routes/chat');
 const workflowRouter = require('./routes/workflow');
 const agentRouter    = require('./routes/agent');
+const tasksController = require('./controllers/tasksController');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/workflow', workflowRouter);
 app.use('/api/tasks',    tasksRouter);
 app.use('/api/runs',     runsRouter);
 app.use('/api/agent',    agentRouter);
+app.post('/api/test-task/:id', tasksController.testTask);
 
 // ─── 404 Handler ──────────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -45,7 +47,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.BACKEND_PORT || process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🚀  FlowGen API running on http://localhost:${PORT}`);
   console.log(`    ENV: ${process.env.NODE_ENV || 'development'}`);

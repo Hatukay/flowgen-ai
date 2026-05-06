@@ -1,20 +1,20 @@
 import { ShieldCheck, X } from "lucide-react";
 
 const triggerLabels = {
-  instant: "Anlık",
-  scheduled: "Planlı",
-  triggered: "Her yeni Telegram mesajında",
+  instant: "Anlik",
+  scheduled: "Planli",
+  triggered: "Tetiklenmeli",
 };
 
 export default function ApprovalModal({ isApproving, onClose, onConfirm, open, task }) {
   if (!open || !task) return null;
 
   const fields = [
-    ["Kaynak", task.source],
-    ["Hedef", task.target],
+    ["Kaynak", task.sourcePlatform],
+    ["Hedef", task.action?.platform],
+    ["Hedef detay", task.action?.target],
     ["Kategori", task.category],
     ["Tetikleme", triggerLabels[task.triggerType] || task.triggerType],
-    ["n8n Template", task.workflowTemplate],
   ];
 
   return (
@@ -26,9 +26,9 @@ export default function ApprovalModal({ isApproving, onClose, onConfirm, open, t
               <ShieldCheck size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-950">Görevi aktifleştir</h2>
+              <h2 className="text-lg font-bold text-slate-950">Gorevi aktif et</h2>
               <p className="mt-1 text-sm leading-6 text-slate-500">
-                Bu görev Telegram mesajlarını okuyacak ve Slack kanalına mesaj gönderecek.
+                Bu gorev {task.sourcePlatform} eventlerini AI ile degerlendirip {task.action?.platform} aksiyonu uretecek.
               </p>
             </div>
           </div>
@@ -57,7 +57,7 @@ export default function ApprovalModal({ isApproving, onClose, onConfirm, open, t
             onClick={onClose}
             type="button"
           >
-            Vazgeç
+            Vazgec
           </button>
           <button
             className="focus-ring min-h-11 rounded-lg bg-blue-600 px-5 text-sm font-bold text-white transition hover:bg-blue-700 disabled:bg-slate-300"
@@ -65,7 +65,7 @@ export default function ApprovalModal({ isApproving, onClose, onConfirm, open, t
             onClick={onConfirm}
             type="button"
           >
-            {isApproving ? "Onaylanıyor" : "Onayla"}
+            {isApproving ? "Onaylaniyor" : "Onayla"}
           </button>
         </div>
       </div>

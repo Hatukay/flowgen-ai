@@ -3,77 +3,93 @@ $pass = 0
 $fail = 0
 
 function Test-Endpoint {
-    param($label, $method, $url, $body = $null)
+    param($label, $method, $url, $body = $null, $expectFail = $false)
     try {
         $params = @{ Uri = $url; Method = $method; ContentType = "application/json" }
-        if ($body) { $params.Body = ($body | ConvertTo-Json -Depth 5) }
+        if ($body) { $params.Body = ($body | ConvertTo-Json -Depth 20) }
         $r = Invoke-RestMethod @params
+        if ($expectFail) {
+            Write-Host "  FAIL  $label - expected failure but got success" -ForegroundColor Red
+            $script:fail++
+            return $null
+        }
         Write-Host "  PASS  $label" -ForegroundColor Green
         $script:pass++
         return $r
     } catch {
+        if ($expectFail) {
+            Write-Host "  PASS  $label (failed as expected)" -ForegroundColor Green
+            $script:pass++
+            return $null
+        }
         Write-Host "  FAIL  $label - $($_.Exception.Message)" -ForegroundColor Red
         $script:fail++
         return $null
     }
 }
 
-Write-Host "`n=== FlowGen API Test Suite ===" -ForegroundColor Cyan
+Write-Host "`n=== AI FlowOps API Test Suite ===" -ForegroundColor Cyan
 
-# 1. Health
-Write-Host "`n[1] Health"
 Test-Endpoint "GET /api/health" "GET" "$base/api/health" | Out-Null
 
-# 2. Tasks - list
-Write-Host "`n[2] Tasks"
 $tasks = Test-Endpoint "GET /api/tasks" "GET" "$base/api/tasks"
-Write-Host "      count: $($tasks.count)"
+if ($tasks) { Write-Host "      tasks: $($tasks.count)" }
 
-# 3. Tasks - get by id
-Test-Endpoint "GET /api/tasks/task-001-telegram-slack" "GET" "$base/api/tasks/task-001-telegram-slack" | Out-Null
+$chat = Test-Endpoint "POST /api/chat" "POST" "$base/api/chat" @{
+    message = "Telegramdan gelen sikayet mesajlarini Discord destek kanalina gonder."
+}
+$taskId = $chat.task.id
+if ($chat) { Write-Host "      task: $taskId | status: $($chat.task.status)" }
 
-# 4. Tasks - create
-$newTask = @{ name = "Test Gorevi"; description = "API test icin olusturuldu"; status = "waiting_approval" }
-$created = Test-Endpoint "POST /api/tasks (create)" "POST" "$base/api/tasks" $newTask
-$newId = $created.data.id
+$approved = Test-Endpoint "POST /api/tasks/:id/approve" "POST" "$base/api/tasks/$taskId/approve"
+if ($approved) { Write-Host "      approved: $($approved.task.status)" }
 
-# 5. Approve
-Write-Host "`n[3] Approve"
-$approved = Test-Endpoint "POST /api/tasks/task-002-mail-summary/approve" "POST" "$base/api/tasks/task-002-mail-summary/approve"
-if ($approved) { Write-Host "      task.status: $($approved.task.status)  |  run.status: $($approved.run.status)" }
-
-# 6. Test endpoint
-Write-Host "`n[4] Test-Task"
-$testResult = Test-Endpoint "POST /api/tasks/task-001-telegram-slack/test" "POST" "$base/api/tasks/task-001-telegram-slack/test"
+$testResult = Test-Endpoint "POST /api/test-task/:id" "POST" "$base/api/test-task/$taskId"
 if ($testResult) {
-    Write-Host "      overall: $($testResult.status)"
-    $testResult.checks | ForEach-Object { Write-Host "        [$($_.result.ToUpper())] $($_.name)" }
+    Write-Host "      task test: $($testResult.status)"
 }
 
-# 7. Runs - list
-Write-Host "`n[5] Runs"
+$telegramEvent = @{
+    event = @{
+        eventId = "telegram_demo_1"
+        platform = "telegram"
+        eventType = "message.created"
+        direction = "inbound"
+        conversationId = "demo_chat"
+        senderId = "demo_user"
+        senderName = "Demo User"
+        text = "Kargom 3 gundur gelmedi, destek istiyorum."
+        subject = $null
+        timestamp = "2026-05-06T13:00:00Z"
+        raw = @{}
+    }
+}
+$decision = Test-Endpoint "POST /api/agent/evaluate-event telegram" "POST" "$base/api/agent/evaluate-event" $telegramEvent
+if ($decision) {
+    Write-Host "      matched: $($decision.matched) | action: $($decision.action.platform)"
+}
+
+$badEvent = @{ event = @{ platform = "teams"; text = "" } }
+Test-Endpoint "POST /api/agent/evaluate-event invalid" "POST" "$base/api/agent/evaluate-event" $badEvent $true | Out-Null
+
+$run = Test-Endpoint "POST /api/runs" "POST" "$base/api/runs" @{
+    taskId = $taskId
+    eventId = "telegram_demo_1"
+    status = "success"
+    platform = "telegram"
+    actionPlatform = "discord"
+    confidence = 0.91
+    summary = "Discord mesaji gonderildi."
+    reason = "n8n action basarili."
+    details = @{}
+}
+if ($run) { Write-Host "      runId: $($run.runId)" }
+
 $runs = Test-Endpoint "GET /api/runs" "GET" "$base/api/runs"
-Write-Host "      count: $($runs.count)"
-
-# 8. Runs - create (n8n style)
-$n8nRun = @{ taskId = "task-001-telegram-slack"; status = "success"; summary = "n8n webhook testi basarili." }
-$newRun = Test-Endpoint "POST /api/runs (n8n callback)" "POST" "$base/api/runs" $n8nRun
-if ($newRun) { Write-Host "      runId: $($newRun.runId)  |  source: $($newRun.data.source)  |  triggeredBy: $($newRun.data.triggeredBy)" }
-
-# 9. Runs - get by id
-if ($newRun) {
-    Test-Endpoint "GET /api/runs/$($newRun.runId)" "GET" "$base/api/runs/$($newRun.runId)" | Out-Null
-}
-
-# 10. 404 handling
-Write-Host "`n[6] Error Handling"
-Test-Endpoint "GET /api/tasks/nonexistent (expect 404)" "GET" "$base/api/tasks/nonexistent-id" | Out-Null
-
-# 11. Cleanup - delete created task
-if ($newId) {
-    Test-Endpoint "DELETE /api/tasks/$newId (cleanup)" "DELETE" "$base/api/tasks/$newId" | Out-Null
-}
+if ($runs) { Write-Host "      runs: $($runs.count)" }
 
 Write-Host "`n=============================" -ForegroundColor Cyan
 Write-Host "  PASSED: $pass   FAILED: $fail" -ForegroundColor $(if ($fail -eq 0) { "Green" } else { "Yellow" })
 Write-Host "=============================" -ForegroundColor Cyan
+
+if ($fail -gt 0) { exit 1 }

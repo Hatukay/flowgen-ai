@@ -1,280 +1,132 @@
 {
   "tasks": [
     {
-      "id": "task-001-telegram-slack",
-      "slug": "telegram-to-slack",
-      "name": "Telegram'dan Slack'e Mesaj Köprüsü",
-      "description": "Belirli bir Telegram kanalına gelen mesajları otomatik olarak şirket Slack kanalına ileten akış. Önemli duyuruların iki platform arasında kaybolmamasını sağlar.",
-      "status": "active",
-      "trigger": {
-        "type": "webhook",
-        "config": {
-          "path": "/telegram-incoming",
-          "method": "POST"
-        }
+      "id": "task_c090c30a-4d9c-4b75-8aa7-b0378364296a",
+      "title": "Son 10 Maili Özetleme",
+      "description": "Gelen kutusundaki son 10 e-postayı analiz eder ve içeriklerini özetleyerek kullanıcıya sunar.",
+      "sourcePlatform": "mail",
+      "triggerType": "instant",
+      "condition": "Kullanıcı son 10 e-postanın özetini talep ettiğinde çalışır.",
+      "category": "Mail",
+      "action": {
+        "type": "summarize",
+        "platform": "dashboard",
+        "target": "user_interface",
+        "textTemplate": "Son 10 e-postanızın özeti aşağıdadır:\n{{summary}}"
       },
-      "steps": [
-        {
-          "id": "step_1",
-          "name": "Telegram Webhook Dinle",
-          "action": "http.request",
-          "description": "Telegram Bot API'den gelen webhook payload'ını yakala",
-          "params": {
-            "method": "POST",
-            "url": "/telegram-incoming"
-          }
-        },
-        {
-          "id": "step_2",
-          "name": "Mesajı Dönüştür",
-          "action": "data.transform",
-          "description": "Telegram mesaj formatını Slack Block Kit formatına çevir",
-          "params": {
-            "inputField": "message.text",
-            "outputFormat": "slack_block"
-          }
-        },
-        {
-          "id": "step_3",
-          "name": "Slack Kanalına Gönder",
-          "action": "slack.message",
-          "description": "#genel kanalına formatlı mesajı ilet",
-          "params": {
-            "channel": "#genel",
-            "text": "📨 Telegram'dan: {{step_2.output}}"
-          }
-        }
-      ],
-      "estimatedTimeSavedMinutes": 5,
-      "tags": [
-        "telegram",
-        "slack",
-        "mesajlaşma",
-        "köprü"
-      ],
-      "complexity": "low",
-      "createdAt": "2026-05-01T08:00:00.000Z",
-      "updatedAt": "2026-05-04T10:15:00.000Z"
+      "approvalRequired": true,
+      "status": "waiting_approval",
+      "maxAttempts": 3,
+      "missingFields": [],
+      "createdAt": "2026-05-06T13:11:04.855Z",
+      "updatedAt": "2026-05-06T13:11:04.855Z"
     },
     {
-      "id": "task-002-mail-summary",
-      "slug": "mail-summary",
-      "name": "Günlük E-posta Özet Raporu",
-      "description": "Her sabah 08:00'de gelen kutusundaki okunmamış e-postaları Claude ile analiz edip önemli maddeleri çıkaran ve yöneticiye Slack DM olarak özet gönderen otomasyon.",
-      "status": "active",
-      "trigger": {
-        "type": "schedule",
-        "config": {
-          "cron": "0 8 * * 1-5",
-          "timezone": "Europe/Istanbul"
-        }
+      "id": "task_demo_telegram_discord_support",
+      "title": "Telegram destek mesajlarini Discorda gonder",
+      "description": "Telegramdan gelen destek veya sikayet mesajlarini Discord destek kanalina iletir.",
+      "sourcePlatform": "telegram",
+      "triggerType": "triggered",
+      "condition": "Telegramdan gelen mesaj destek talebi veya sikayet anlami tasiyorsa eslesir.",
+      "category": "Destek",
+      "action": {
+        "type": "send_message",
+        "platform": "discord",
+        "target": "#destek",
+        "textTemplate": "Yeni Telegram destek mesaji:\nKullanici: {{senderName}}\nMesaj: {{text}}"
       },
-      "steps": [
-        {
-          "id": "step_1",
-          "name": "Okunmamış E-postaları Çek",
-          "action": "email.send",
-          "description": "Son 24 saatteki okunmamış e-postaları Gmail API üzerinden listele",
-          "params": {
-            "filter": "is:unread newer_than:1d",
-            "maxResults": 50
-          }
-        },
-        {
-          "id": "step_2",
-          "name": "Claude ile Özetle",
-          "action": "ai.generate",
-          "description": "E-posta listesini Claude'a gönder, Türkçe madde madde özet iste",
-          "params": {
-            "model": "claude-3-5-sonnet-20241022",
-            "prompt": "Aşağıdaki e-postaları önem sırasına göre Türkçe özetle: {{step_1.emails}}"
-          }
-        },
-        {
-          "id": "step_3",
-          "name": "Slack DM Gönder",
-          "action": "slack.message",
-          "description": "Özeti yöneticinin Slack DM'ine gönder",
-          "params": {
-            "channel": "@yonetici",
-            "text": "📬 *Günlük E-posta Özeti*\n{{step_2.output}}"
-          }
-        }
-      ],
-      "estimatedTimeSavedMinutes": 20,
-      "tags": [
-        "email",
-        "gmail",
-        "özet",
-        "yapay-zeka",
-        "slack"
-      ],
-      "complexity": "medium",
-      "createdAt": "2026-05-02T09:30:00.000Z",
-      "updatedAt": "2026-05-06T12:04:34.462Z"
+      "approvalRequired": true,
+      "status": "active",
+      "maxAttempts": 3,
+      "createdAt": "2026-05-06T10:00:00.000Z",
+      "updatedAt": "2026-05-06T10:10:00.000Z"
     },
     {
-      "id": "task-003-payment-reminder",
-      "slug": "payment-reminder",
-      "name": "Gecikmiş Ödeme Hatırlatıcısı",
-      "description": "Muhasebe sistemindeki vadesi geçmiş faturalar için müşterilere otomatik e-posta ve SMS hatırlatması gönderir. 3 gün, 7 gün ve 14 günlük vade basamakları içerir.",
-      "status": "active",
-      "trigger": {
-        "type": "schedule",
-        "config": {
-          "cron": "0 9 * * *",
-          "timezone": "Europe/Istanbul"
-        }
+      "id": "task_demo_mail_summary",
+      "title": "Son 10 maili ozetle",
+      "description": "Mail kutusundaki son mesajlari ozetleyip dashboarda kaydeder.",
+      "sourcePlatform": "mail",
+      "triggerType": "instant",
+      "condition": "Kullanici mail ozetini manuel olarak ister veya mail ozet eventi gonderilir.",
+      "category": "Mail",
+      "action": {
+        "type": "summarize",
+        "platform": "dashboard",
+        "target": "dashboard",
+        "textTemplate": "Mail ozeti: {{text}}"
       },
-      "steps": [
-        {
-          "id": "step_1",
-          "name": "Vadesi Geçmiş Faturaları Sorgula",
-          "action": "database.query",
-          "description": "Muhasebe DB'sinden vadesi 3+ gün geçmiş açık fatura kayıtlarını çek",
-          "params": {
-            "query": "SELECT * FROM invoices WHERE due_date < NOW() - INTERVAL '3 days' AND status = 'open'",
-            "connection": "accounting_db"
-          }
-        },
-        {
-          "id": "step_2",
-          "name": "Basamak Hesapla",
-          "action": "data.transform",
-          "description": "Her fatura için gecikme gününe göre 3/7/14 günlük basamağı belirle",
-          "params": {
-            "logic": "escalation_tier"
-          }
-        },
-        {
-          "id": "step_3",
-          "name": "Hatırlatma E-postası Gönder",
-          "action": "email.send",
-          "description": "Müşteriye basamağa uygun Türkçe şablonlu ödeme hatırlatma maili at",
-          "params": {
-            "template": "payment_reminder_tr",
-            "to": "{{step_1.customer_email}}",
-            "subject": "Ödeme Hatırlatması – Fatura #{{step_1.invoice_no}}"
-          }
-        },
-        {
-          "id": "step_4",
-          "name": "Muhasebe Sistemini Güncelle",
-          "action": "database.query",
-          "description": "Hatırlatma gönderim tarihini ve basamağını fatura kaydına yaz",
-          "params": {
-            "query": "UPDATE invoices SET last_reminder_at = NOW(), reminder_tier = {{step_2.tier}} WHERE id = {{step_1.id}}"
-          }
-        }
-      ],
-      "estimatedTimeSavedMinutes": 45,
-      "tags": [
-        "finans",
-        "ödeme",
-        "hatırlatma",
-        "e-posta",
-        "muhasebe"
-      ],
-      "complexity": "high",
-      "createdAt": "2026-05-03T11:00:00.000Z",
-      "updatedAt": "2026-05-06T08:00:00.000Z"
+      "approvalRequired": true,
+      "status": "active",
+      "maxAttempts": 3,
+      "createdAt": "2026-05-06T10:15:00.000Z",
+      "updatedAt": "2026-05-06T10:20:00.000Z"
+    },
+    {
+      "id": "task_demo_payment_reminder",
+      "title": "Odeme tarihi yaklasan mailleri hatirlat",
+      "description": "Mail eventlerinde odeme tarihi bilgisini bulup hatirlatma aksiyonu olusturur.",
+      "sourcePlatform": "mail",
+      "triggerType": "triggered",
+      "condition": "Mail icerigi odeme tarihi, fatura veya vade hatirlatmasi anlami tasiyorsa eslesir.",
+      "category": "Odeme",
+      "action": {
+        "type": "create_reminder",
+        "platform": "dashboard",
+        "target": "reminders",
+        "textTemplate": "Odeme hatirlatmasi: {{subject}} {{text}}"
+      },
+      "approvalRequired": true,
+      "status": "active",
+      "maxAttempts": 3,
+      "createdAt": "2026-05-06T10:30:00.000Z",
+      "updatedAt": "2026-05-06T10:35:00.000Z"
     }
   ],
   "runs": [
     {
-      "id": "run-001-telegram-slack-ok",
-      "taskId": "task-001-telegram-slack",
+      "id": "run_demo_telegram_discord_1",
+      "taskId": "task_demo_telegram_discord_support",
+      "eventId": "telegram_demo_1",
       "status": "success",
-      "triggeredBy": "webhook",
-      "stepsCompleted": 3,
-      "stepsTotal": 3,
-      "inputPayload": {
-        "message": {
-          "text": "🔔 Sistem bakımı bu gece 23:00-01:00 arası yapılacaktır.",
-          "from": "admin_bot",
-          "chatId": "-1001234567890"
-        }
-      },
-      "outputSummary": "Mesaj başarıyla #genel Slack kanalına iletildi.",
-      "durationMs": 843,
-      "timeSavedMinutes": 5,
-      "createdAt": "2026-05-06T09:14:22.000Z",
-      "updatedAt": "2026-05-06T09:14:23.000Z"
+      "platform": "telegram",
+      "actionPlatform": "discord",
+      "confidence": 0.91,
+      "summary": "Telegram destek mesaji Discord aksiyonuna donustu.",
+      "reason": "Mesaj teslimat problemi ve destek talebi anlami tasiyor.",
+      "createdAt": "2026-05-06T13:00:00.000Z",
+      "details": {
+        "demo": true
+      }
     },
     {
-      "id": "run-002-mail-summary-ok",
-      "taskId": "task-002-mail-summary",
+      "id": "run_demo_mail_summary_1",
+      "taskId": "task_demo_mail_summary",
+      "eventId": "mail_demo_1",
       "status": "success",
-      "triggeredBy": "schedule",
-      "stepsCompleted": 3,
-      "stepsTotal": 3,
-      "inputPayload": {
-        "date": "2026-05-06",
-        "unreadCount": 14
-      },
-      "outputSummary": "14 okunmamış e-posta özetlendi ve yöneticiye Slack DM olarak iletildi.",
-      "durationMs": 4210,
-      "timeSavedMinutes": 20,
-      "createdAt": "2026-05-06T08:00:11.000Z",
-      "updatedAt": "2026-05-06T08:00:15.000Z"
+      "platform": "mail",
+      "actionPlatform": "dashboard",
+      "confidence": 0.86,
+      "summary": "Mail ozeti dashboarda kaydedildi.",
+      "reason": "Event mail ozetleme goreviyle eslesti.",
+      "createdAt": "2026-05-06T13:20:00.000Z",
+      "details": {
+        "demo": true
+      }
     },
     {
-      "id": "run-003-payment-reminder-partial",
-      "taskId": "task-003-payment-reminder",
-      "status": "partial",
-      "triggeredBy": "schedule",
-      "stepsCompleted": 3,
-      "stepsTotal": 4,
-      "inputPayload": {
-        "date": "2026-05-06",
-        "overdueInvoices": 7
-      },
-      "outputSummary": "7 vadesi geçmiş faturadan 6 tanesine hatırlatma e-postası gönderildi. 1 müşteri e-postası geçersiz olduğundan adım başarısız oldu. DB güncelleme adımı tamamlanamadı.",
-      "errors": [
-        {
-          "step": "step_3",
-          "invoiceId": "INV-2026-0441",
-          "reason": "Geçersiz e-posta adresi: musterid@.com"
-        }
-      ],
-      "durationMs": 6780,
-      "timeSavedMinutes": 38,
-      "createdAt": "2026-05-06T09:00:08.000Z",
-      "updatedAt": "2026-05-06T09:00:15.000Z"
-    },
-    {
-      "id": "4444eff4-fdb9-45ce-8239-d38767f79e89",
-      "taskId": "task-002-mail-summary",
-      "status": "success",
-      "triggeredBy": "approve",
-      "stepsCompleted": 1,
-      "stepsTotal": 1,
-      "outputSummary": "\"Günlük E-posta Özet Raporu\" görevi onaylandı ve aktifleştirildi.",
-      "webhookFired": false,
-      "createdAt": "2026-05-06T11:59:50.950Z",
-      "updatedAt": "2026-05-06T11:59:50.950Z"
-    },
-    {
-      "id": "d749fc43-8f58-40c8-a0bd-3fcb204e7ac2",
-      "taskId": "task-002-mail-summary",
-      "status": "success",
-      "triggeredBy": "approve",
-      "stepsCompleted": 1,
-      "stepsTotal": 1,
-      "outputSummary": "\"Günlük E-posta Özet Raporu\" görevi onaylandı ve aktifleştirildi.",
-      "webhookFired": false,
-      "createdAt": "2026-05-06T12:04:34.462Z",
-      "updatedAt": "2026-05-06T12:04:34.462Z"
-    },
-    {
-      "id": "75374cc4-7eb7-46cd-9e0e-6523ef2c3d96",
-      "taskId": "task-001-telegram-slack",
-      "status": "success",
-      "outputSummary": "n8n webhook testi basarili.",
-      "triggeredBy": "n8n",
-      "source": "n8n",
-      "createdAt": "2026-05-06T12:04:34.503Z",
-      "updatedAt": "2026-05-06T12:04:34.503Z"
+      "id": "run_demo_discord_skipped_1",
+      "taskId": null,
+      "eventId": "discord_demo_1",
+      "status": "skipped",
+      "platform": "discord",
+      "actionPlatform": null,
+      "confidence": 0,
+      "summary": "Discord event aktif gorevlerle eslesmedi.",
+      "reason": "Demo seed icinde Discord kaynakli aktif gorev yok.",
+      "createdAt": "2026-05-06T13:30:00.000Z",
+      "details": {
+        "demo": true
+      }
     }
   ]
 }

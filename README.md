@@ -1,68 +1,115 @@
-# AI FlowOps (FlowGen AI)
+# AI FlowOps MVP
 
-AI FlowOps (eski adıyla FlowGen AI), doğal dilde (Türkçe) yazılmış kullanıcı taleplerini algılayarak otomatik olarak n8n iş akışları (workflow) üreten, bunları devreye alan ve yürütülmesini yöneten yeni nesil bir otomasyon platformudur. Claude AI entegrasyonu sayesinde teknik olmayan kullanıcılar bile karmaşık iş süreçlerini anında otomatize edebilir ve sağlanan zaman tasarrufunu gösterge paneli (dashboard) üzerinden takip edebilir.
+AI FlowOps, Telegram / Discord / Mail uzerinden gelen mesajlari kullanicinin dogal dilde tanimladigi gorevlerle isleyen hackathon MVP'sidir. Kullanici chat ekranina gorevi yazar, backend Gemini ile task plani uretir, kullanici onaylar, n8n gelen eventleri ortak JSON formatina cevirip backend decision agent endpointine yollar.
 
-## 🚀 Başlangıç (Nasıl Çalıştırılır?)
+Slack bu MVP'de kullanilmiyor. Platformlar: Telegram, Discord, Mail.
 
-Proje, Backend (Express.js) ve Frontend (Next.js) olmak üzere iki ana bileşenden oluşur.
+## MVP Kapsami
 
-### 1. Backend Kurulumu
-Backend klasörüne gidin (örn. `flowgen-ai/`):
+- Dogal dil gorev olusturma: `POST /api/chat`
+- Kullanici onayi: `POST /api/tasks/:id/approve`
+- n8n event karari: `POST /api/agent/evaluate-event`
+- Run log: `POST /api/runs`, `GET /api/runs`
+- Dashboard: aktif gorevler, onay bekleyenler, son run kayitlari
+- LLM: Google AI Studio Gemini (`gemini-3-flash-preview`)
+
+## Backend
+
 ```bash
-# Bağımlılıkları yükleyin
 npm install
-
-# .env dosyasını oluşturun ve gerekli alanları doldurun
 cp .env.example .env
-
-# Geliştirme sunucusunu başlatın (Port: 3001)
 npm run dev
 ```
 
-### 2. Frontend Kurulumu
-Frontend klasörüne gidin (örn. `flowgen-web/`):
+Backend varsayilan port: `3001`.
+
+## Frontend
+
 ```bash
-# Bağımlılıkları yükleyin
+cd frontend
 npm install
-
-# .env.local dosyasını oluşturun (NEXT_PUBLIC_API_URL=http://localhost:3001)
-# Geliştirme sunucusunu başlatın (Port: 3000)
 npm run dev
 ```
 
-### 3. n8n Entegrasyonu
-n8n arayüzüne aşağıdaki adresten erişebilir ve oluşturulan akışları gözlemleyebilirsiniz:
-> **n8n Cloud Adresi:** `[BURAYA_N8N_INSTANCE_URL_GELECEK]`
+Frontend varsayilan port: `5173`.
 
-## 💡 Demo Senaryoları & Örnek Prompt'lar
+## Env Degiskenleri
 
-Platformu denerken chat arayüzüne yazabileceğiniz 3 örnek senaryo:
+Gercek degerleri sadece `.env` icinde tutun. `.env` gitignore icindedir.
 
-**Senaryo 1: Mesajlaşma Köprüsü (Düşük Karmaşıklık)**
-> *"Telegram'daki duyuru kanalımıza gelen mesajları yakalayıp, bizim şirketin Slack workspace'indeki #genel kanalına otomatik ileten bir akış kurar mısın?"*
+```env
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3-flash-preview
+MOCK_LLM=false
+BACKEND_PORT=3001
+N8N_BASE_URL=http://localhost:5678
+TELEGRAM_BOT_TOKEN=
+DISCORD_BOT_TOKEN=
+DISCORD_DEFAULT_CHANNEL_ID=
+MAIL_USER=
+MAIL_PASSWORD=
+```
 
-**Senaryo 2: Günlük Raporlama (Orta Karmaşıklık)**
-> *"Her sabah saat 08:00'de Gmail kutumdaki son 24 saate ait okunmamış e-postaları çeksin, Claude ile önemli kısımlarını Türkçe özetlesin ve bana Slack'ten özel mesaj olarak atsın."*
+## Lokal n8n Notu
 
-**Senaryo 3: Finansal Takip & Hatırlatma (Yüksek Karmaşıklık)**
-> *"Muhasebe veritabanına bağlanıp vadesi 3 günü geçmiş faturaları bulsun. Bu faturaların durumuna göre 3, 7 veya 14 günlük gecikme basamaklarını hesaplayıp müşteriye uygun Türkçe hatırlatma maili atsın. Son olarak da veritabanında hatırlatma atıldı olarak güncellesin."*
+n8n bir bilgisayarda lokal calisabilir. Diger ekip uyeleri ayni agdan `http://<n8n-ip>:5678` adresine baglanabilir. Production public webhook zorunlu degildir; polling, manual trigger veya connector output MVP icin yeterlidir.
 
-## 📂 Proje Yapısı
+n8n akisi:
 
-Genel repo mimarisi aşağıdaki şekildedir:
+1. Telegram / Discord / Mail connector event alir.
+2. Event `NormalizedEvent` formatina cevrilir.
+3. Backend `/api/agent/evaluate-event` endpointine POST edilir.
+4. Backend Gemini decision agent ile action dondurur.
+5. n8n action platformuna gore Discord / Telegram / Mail node calistirir.
+6. Sonuc `/api/runs` endpointine loglanir.
+
+## Demo Akisi
+
+Chat mesaji:
 
 ```text
-ai-flowops/
-├── src/                    # Backend kaynak kodları
-│   ├── controllers/        # Route işleyicileri (chat, runs, tasks, workflow)
-│   ├── data/               # File-based DB (db.json)
-│   ├── prompts/            # Claude AI için sistem promptları (.md formatında)
-│   ├── routes/             # Express route tanımlamaları
-│   ├── services/           # Dış servis entegrasyonları (n8n API)
-│   ├── utils/              # Yardımcı fonksiyonlar (DB okuma/yazma)
-│   └── index.js            # Uygulama giriş noktası ve Express ayarları
-├── test-api.ps1            # API uç noktalarını test etmek için PowerShell betiği
-├── .env.example            # Örnek çevre değişkenleri dosyası
-├── package.json            # Proje bağımlılıkları ve script'ler
-└── README.md               # Proje dökümantasyonu
+Telegramdan gelen sikayet mesajlarini Discord destek kanalina gonder.
 ```
+
+Olusan task:
+
+- Kaynak: `telegram`
+- Hedef: `discord`
+- Trigger: `triggered`
+- Kategori: `Destek`
+- Kosul: destek veya sikayet anlami tasiyan Telegram mesajlari
+- Aksiyon: Discord `#destek` kanalina mesaj
+
+## Curl Testleri
+
+```bash
+curl -X POST http://localhost:3001/api/chat \
+  -H "Content-Type: application/json" \
+  -d "{\"message\":\"Telegramdan gelen sikayet mesajlarini Discord destek kanalina gonder.\"}"
+```
+
+```bash
+curl -X POST http://localhost:3001/api/agent/evaluate-event \
+  -H "Content-Type: application/json" \
+  -d "{\"event\":{\"eventId\":\"telegram_demo_1\",\"platform\":\"telegram\",\"eventType\":\"message.created\",\"direction\":\"inbound\",\"conversationId\":\"demo_chat\",\"senderId\":\"demo_user\",\"senderName\":\"Demo User\",\"text\":\"Kargom 3 gundur gelmedi, destek istiyorum.\",\"subject\":null,\"timestamp\":\"2026-05-06T13:00:00Z\",\"raw\":{}}}"
+```
+
+```bash
+curl -X POST http://localhost:3001/api/runs \
+  -H "Content-Type: application/json" \
+  -d "{\"taskId\":\"task_demo_telegram_discord_support\",\"eventId\":\"telegram_demo_1\",\"status\":\"success\",\"platform\":\"telegram\",\"actionPlatform\":\"discord\",\"confidence\":0.91,\"summary\":\"Discord mesaji gonderildi.\",\"reason\":\"n8n action basarili.\",\"details\":{}}"
+```
+
+## Testler
+
+```bash
+npm test
+npm --prefix frontend run build
+pwsh ./test-api.ps1
+```
+
+## Guvenlik
+
+- Token, webhook, bot token ve mail sifresi repo'ya yazilmaz.
+- n8n workflow exportlarinda credential varsa export temizlenmeli veya placeholder kullanilmali.
+- Paylasilmis demo API keyleri hackathon sonrasinda rotate edilmelidir.

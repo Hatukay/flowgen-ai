@@ -9,37 +9,17 @@ const cardStyles = {
 
 export default function DashboardCards({ metrics }) {
   const cards = [
-    {
-      label: "Aktif Görevler",
-      value: metrics.activeTasks,
-      icon: Activity,
-      tone: "active",
-    },
-    {
-      label: "Onay Bekleyen",
-      value: metrics.pendingTasks,
-      icon: Clock3,
-      tone: "pending",
-    },
-    {
-      label: "Bugünkü Çalışmalar",
-      value: metrics.todayRuns,
-      icon: CalendarCheck2,
-      tone: "runs",
-    },
-    {
-      label: "Başarılı Testler",
-      value: metrics.successfulTests,
-      icon: ClipboardCheck,
-      tone: "tests",
-    },
+    { label: "Aktif Gorevler", value: metrics.activeTasks, icon: Activity, tone: "active" },
+    { label: "Onay Bekleyen", value: metrics.pendingTasks, icon: Clock3, tone: "pending" },
+    { label: "Bugunku Run", value: metrics.todayRuns, icon: CalendarCheck2, tone: "runs" },
+    { label: "Basarili Run", value: metrics.successfulRuns, icon: ClipboardCheck, tone: "tests" },
   ];
 
   return (
     <section className="card p-5">
       <div className="mb-4">
         <h2 className="text-base font-bold text-slate-950">Dashboard</h2>
-        <p className="text-sm text-slate-500">Görev, run ve test görünümü</p>
+        <p className="text-sm text-slate-500">Gorev, run ve test gorunumu</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
         {cards.map((card) => {

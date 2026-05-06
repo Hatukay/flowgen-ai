@@ -2,9 +2,17 @@ import { CheckCircle2, Clock3, Play, ShieldCheck, TestTube2 } from "lucide-react
 import StatusBadge from "./StatusBadge";
 
 const triggerLabels = {
-  instant: "Anlık",
-  scheduled: "Planlı",
+  instant: "Anlik",
+  scheduled: "Planli",
   triggered: "Tetiklenmeli",
+};
+
+const platformLabels = {
+  telegram: "Telegram",
+  discord: "Discord",
+  mail: "Mail",
+  dashboard: "Dashboard",
+  any: "Her kaynak",
 };
 
 export default function PlanCard({ plan, isApproving, onApprove, onEdit, onTest }) {
@@ -15,9 +23,9 @@ export default function PlanCard({ plan, isApproving, onApprove, onEdit, onTest 
   const meta = [
     ["Kategori", task.category],
     ["Tip", triggerLabels[task.triggerType] || task.triggerType],
-    ["Kaynak", task.source],
-    ["Hedef", task.target],
-    ["Template", task.workflowTemplate],
+    ["Kaynak", platformLabels[task.sourcePlatform] || task.sourcePlatform],
+    ["Hedef", platformLabels[task.action?.platform] || task.action?.platform],
+    ["Onay", task.approvalRequired ? "Gerekli" : "Gerekmez"],
   ];
 
   return (
@@ -46,14 +54,27 @@ export default function PlanCard({ plan, isApproving, onApprove, onEdit, onTest 
           ))}
         </div>
 
+        <div className="grid gap-3 lg:grid-cols-2">
+          <div className="rounded-lg border border-line bg-white p-4">
+            <p className="text-xs font-semibold text-slate-500">Kosul</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">{task.condition}</p>
+          </div>
+          <div className="rounded-lg border border-line bg-white p-4">
+            <p className="text-xs font-semibold text-slate-500">Aksiyon</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              {task.action?.type} to {platformLabels[task.action?.platform] || task.action?.platform} / {task.action?.target}
+            </p>
+          </div>
+        </div>
+
         <div>
           <div className="mb-3 flex items-center gap-2">
             <Clock3 size={18} className="text-blue-600" />
-            <h3 className="text-sm font-bold text-slate-950">Görev Planı</h3>
+            <h3 className="text-sm font-bold text-slate-950">Gorev Plani</h3>
           </div>
           <ol className="space-y-2">
-            {plan.plan.map((step, index) => (
-              <li className="flex gap-3 text-sm leading-6 text-slate-600" key={step}>
+            {(plan.plan || []).map((step, index) => (
+              <li className="flex gap-3 text-sm leading-6 text-slate-600" key={`${step}_${index}`}>
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-50 text-xs font-bold text-blue-700">
                   {index + 1}
                 </span>
@@ -71,7 +92,7 @@ export default function PlanCard({ plan, isApproving, onApprove, onEdit, onTest 
             type="button"
           >
             {isActive ? <CheckCircle2 size={17} /> : <Play size={17} />}
-            {isActive ? "Aktifleştirildi" : isApproving ? "Aktifleştiriliyor" : "Onayla ve Aktifleştir"}
+            {isActive ? "Aktif" : isApproving ? "Aktif ediliyor" : "Onayla ve Aktif Et"}
           </button>
           <button
             className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-line bg-white px-5 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
@@ -86,7 +107,7 @@ export default function PlanCard({ plan, isApproving, onApprove, onEdit, onTest 
             onClick={onEdit}
             type="button"
           >
-            Düzenle
+            Duzenle
           </button>
         </div>
       </div>

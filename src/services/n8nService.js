@@ -72,7 +72,7 @@ const n8nRequest = (method, endpoint, data = null) => {
 
 /**
  * Create a new workflow in n8n (inactive by default).
- * @param {object} workflowJson - Full n8n workflow object from Claude.
+ * @param {object} workflowJson - Full n8n workflow object from Gemini.
  * @returns {Promise<object>}   - Created workflow from n8n (includes its `id`).
  */
 const createWorkflow = async (workflowJson) => {

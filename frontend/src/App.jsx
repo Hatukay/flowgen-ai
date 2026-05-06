@@ -16,22 +16,14 @@ function wait(ms) {
 }
 
 function successSummaryFor(task) {
-  if (task.workflowTemplate === "mail_summary") {
-    return "Son 10 mail özetlendi.";
-  }
-
-  if (task.workflowTemplate === "payment_reminder") {
-    return "Ödeme hatırlatıcısı planlandı.";
-  }
-
-  return "Telegram mesajı Slack destek kanalına gönderildi.";
+  if (task.action?.type === "summarize") return "Son 10 mail ozetlendi.";
+  if (task.action?.type === "create_reminder") return "Odeme hatirlaticisi planlandi.";
+  return "Telegram mesaji Discord destek kanalina gonderildi.";
 }
 
 function upsertTask(tasks, nextTask) {
   const exists = tasks.some((task) => task.id === nextTask.id);
-  if (exists) {
-    return tasks.map((task) => (task.id === nextTask.id ? nextTask : task));
-  }
+  if (exists) return tasks.map((task) => (task.id === nextTask.id ? nextTask : task));
   return [nextTask, ...tasks];
 }
 
@@ -57,7 +49,6 @@ export default function App() {
     }
 
     loadDemoData();
-
     return () => {
       mounted = false;
     };
@@ -65,15 +56,13 @@ export default function App() {
 
   const metrics = useMemo(() => {
     const pendingFromPlan = currentPlan?.task?.status === "waiting_approval" ? 1 : 0;
-    const activeTasks = tasks.filter((task) => task.status === "active").length;
-
     return {
-      activeTasks,
-      pendingTasks: pendingFromPlan,
+      activeTasks: tasks.filter((task) => task.status === "active").length,
+      pendingTasks: tasks.filter((task) => task.status === "waiting_approval").length + pendingFromPlan,
       todayRuns: runs.length,
-      successfulTests: testResult?.status === "passed" ? "3/3" : "2/3",
+      successfulRuns: runs.filter((run) => run.status === "success").length,
     };
-  }, [currentPlan, runs.length, tasks, testResult]);
+  }, [currentPlan, runs, tasks]);
 
   async function handleChatSubmit(message) {
     setLastUserMessage(message);
@@ -97,22 +86,23 @@ export default function App() {
       status: "active",
     };
 
-    const nextPlan = {
-      ...currentPlan,
-      task: activeTask,
-    };
-
-    const newRun = {
-      id: `run_${Date.now()}`,
-      taskId: activeTask.id,
-      status: "success",
-      summary: successSummaryFor(activeTask),
-      createdAt: new Date().toISOString(),
-    };
-
-    setCurrentPlan(nextPlan);
+    setCurrentPlan((previous) => ({ ...previous, task: activeTask }));
     setTasks((previous) => upsertTask(previous, activeTask));
-    setRuns((previous) => [newRun, ...previous]);
+    setRuns((previous) => [
+      {
+        id: `run_${Date.now()}`,
+        taskId: activeTask.id,
+        eventId: null,
+        status: "success",
+        platform: "system",
+        actionPlatform: activeTask.action?.platform,
+        confidence: null,
+        summary: successSummaryFor(activeTask),
+        reason: "Kullanici onayi ile gorev active durumuna alindi.",
+        createdAt: new Date().toISOString(),
+      },
+      ...previous,
+    ]);
     setTestResult(mockTestResult);
     setIsApprovalOpen(false);
     setIsApproving(false);
@@ -145,7 +135,7 @@ export default function App() {
               <PlanCard
                 isApproving={isApproving}
                 onApprove={() => setIsApprovalOpen(true)}
-                onEdit={() => setLastUserMessage("Plan düzenleme demo kapsamında mock olarak tutuluyor.")}
+                onEdit={() => setLastUserMessage("Plan duzenleme demo kapsaminda mock olarak tutuluyor.")}
                 onTest={handleTestTask}
                 plan={currentPlan}
               />
