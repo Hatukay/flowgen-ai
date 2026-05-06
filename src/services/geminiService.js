@@ -94,12 +94,71 @@ const evaluateEventDecision = async (event, tasks) => {
 
 const generateWorkflowJson = async (plan) => {
   if (shouldUseMock()) {
+    const task = plan?.task || plan || {};
+    const src = task.sourcePlatform || 'telegram';
+    const dst = task.action?.platform || 'discord';
+    const title = task.title || 'AI FlowOps demo workflow';
+
+    const triggerNodeMap = {
+      telegram: { type: 'n8n-nodes-base.telegramTrigger', params: { updates: ['message'] }, credKey: 'telegramApi', credName: 'My Telegram Bot' },
+      discord:  { type: 'n8n-nodes-base.discordTrigger',  params: { events: ['messageCreate'] }, credKey: 'discordBotApi', credName: 'My Discord Bot' },
+      mail:     { type: 'n8n-nodes-base.emailReadImap',   params: { mailbox: 'INBOX', postProcessAction: 'read' }, credKey: 'imap', credName: 'My IMAP Account' },
+    };
+    const actionNodeMap = {
+      telegram: { type: 'n8n-nodes-base.telegram',  params: { operation: 'sendMessage', chatId: '', text: task.action?.textTemplate || '' }, credKey: 'telegramApi', credName: 'My Telegram Bot' },
+      discord:  { type: 'n8n-nodes-base.discord',   params: { operation: 'sendMessage', guildId: '', channelId: '', content: task.action?.textTemplate || '' }, credKey: 'discordBotApi', credName: 'My Discord Bot' },
+      mail:     { type: 'n8n-nodes-base.gmail',     params: { operation: 'send', to: '', subject: title, message: task.action?.textTemplate || '' }, credKey: 'gmailOAuth2', credName: 'My Gmail' },
+      dashboard: { type: 'n8n-nodes-base.httpRequest', params: { method: 'POST', url: 'http://localhost:3001/api/runs', sendBody: true }, credKey: null, credName: null },
+    };
+
+    const trigger = triggerNodeMap[src] || triggerNodeMap.telegram;
+    const action  = actionNodeMap[dst]  || actionNodeMap.discord;
+
+    const triggerNode = {
+      id: `node-trigger-${src}`,
+      name: `${src.charAt(0).toUpperCase() + src.slice(1)} Trigger`,
+      type: trigger.type,
+      typeVersion: 1,
+      position: [250, 300],
+      parameters: trigger.params,
+      ...(trigger.credKey ? { credentials: { [trigger.credKey]: { id: '1', name: trigger.credName } } } : {}),
+    };
+
+    const httpNode = {
+      id: 'node-backend-event',
+      name: 'Backend Event Gonder',
+      type: 'n8n-nodes-base.httpRequest',
+      typeVersion: 4,
+      position: [500, 300],
+      parameters: {
+        method: 'POST',
+        url: 'http://localhost:3001/api/agent/evaluate-event',
+        sendBody: true,
+        specifyBody: 'json',
+        jsonBody: `={ "event": { "eventId": "{{ $json.message?.message_id || $json.id || 'evt_' + Date.now() }}", "platform": "${src}", "eventType": "message.created", "direction": "inbound", "conversationId": "{{ $json.message?.chat?.id || $json.channel_id || '' }}", "senderId": "{{ $json.message?.from?.id || $json.author?.id || '' }}", "senderName": "{{ $json.message?.from?.first_name || $json.author?.username || 'Unknown' }}", "text": "{{ $json.message?.text || $json.content || '' }}", "subject": null, "timestamp": "{{ new Date().toISOString() }}", "raw": {} } }`,
+      },
+    };
+
+    const actionNode = {
+      id: `node-action-${dst}`,
+      name: `${dst.charAt(0).toUpperCase() + dst.slice(1)} Aksiyon`,
+      type: action.type,
+      typeVersion: dst === 'dashboard' ? 4 : 2,
+      position: [750, 300],
+      parameters: action.params,
+      ...(action.credKey ? { credentials: { [action.credKey]: { id: '2', name: action.credName } } } : {}),
+    };
+
     return {
-      name: plan?.task?.title || plan?.title || 'AI FlowOps demo workflow',
+      name: title,
       active: false,
-      nodes: [],
-      connections: {},
-      meta: { templateCredsSetupCompleted: true, mock: true },
+      nodes: [triggerNode, httpNode, actionNode],
+      connections: {
+        [triggerNode.name]: { main: [[{ node: httpNode.name, type: 'main', index: 0 }]] },
+        [httpNode.name]:    { main: [[{ node: actionNode.name, type: 'main', index: 0 }]] },
+      },
+      settings: { executionOrder: 'v1' },
+      meta: { templateCredsSetupCompleted: false, mock: true },
     };
   }
 

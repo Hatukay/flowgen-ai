@@ -1,6 +1,69 @@
 {
   "tasks": [
     {
+      "id": "task_telegram_discord_1778073665465",
+      "title": "Telegram destek mesajlarini Discorda gonder",
+      "description": "Telegramdan gelen destek veya sikayet mesajlarini Discord destek kanalina iletir.",
+      "sourcePlatform": "telegram",
+      "triggerType": "triggered",
+      "condition": "Telegramdan gelen mesaj destek talebi veya sikayet anlami tasiyorsa eslesir.",
+      "category": "Destek",
+      "action": {
+        "type": "send_message",
+        "platform": "discord",
+        "target": "#destek",
+        "textTemplate": "Yeni Telegram destek mesaji:\nKullanici: {{senderName}}\nMesaj: {{text}}"
+      },
+      "approvalRequired": true,
+      "status": "active",
+      "maxAttempts": 3,
+      "missingFields": [],
+      "createdAt": "2026-05-06T13:21:05.467Z",
+      "updatedAt": "2026-05-06T13:21:05.505Z"
+    },
+    {
+      "id": "task_telegram_discord_1778073582203",
+      "title": "Telegram destek mesajlarini Discorda gonder",
+      "description": "Telegramdan gelen destek veya sikayet mesajlarini Discord destek kanalina iletir.",
+      "sourcePlatform": "telegram",
+      "triggerType": "triggered",
+      "condition": "Telegramdan gelen mesaj destek talebi veya sikayet anlami tasiyorsa eslesir.",
+      "category": "Destek",
+      "action": {
+        "type": "send_message",
+        "platform": "discord",
+        "target": "#destek",
+        "textTemplate": "Yeni Telegram destek mesaji:\nKullanici: {{senderName}}\nMesaj: {{text}}"
+      },
+      "approvalRequired": true,
+      "status": "active",
+      "maxAttempts": 3,
+      "missingFields": [],
+      "createdAt": "2026-05-06T13:19:42.203Z",
+      "updatedAt": "2026-05-06T13:19:42.212Z"
+    },
+    {
+      "id": "task_telegram_discord_1778073525467",
+      "title": "Telegram destek mesajlarini Discorda gonder",
+      "description": "Telegramdan gelen destek veya sikayet mesajlarini Discord destek kanalina iletir.",
+      "sourcePlatform": "telegram",
+      "triggerType": "triggered",
+      "condition": "Telegramdan gelen mesaj destek talebi veya sikayet anlami tasiyorsa eslesir.",
+      "category": "Destek",
+      "action": {
+        "type": "send_message",
+        "platform": "discord",
+        "target": "#destek",
+        "textTemplate": "Yeni Telegram destek mesaji:\nKullanici: {{senderName}}\nMesaj: {{text}}"
+      },
+      "approvalRequired": true,
+      "status": "active",
+      "maxAttempts": 3,
+      "missingFields": [],
+      "createdAt": "2026-05-06T13:18:45.468Z",
+      "updatedAt": "2026-05-06T13:18:51.502Z"
+    },
+    {
       "id": "task_c090c30a-4d9c-4b75-8aa7-b0378364296a",
       "title": "Son 10 Maili Özetleme",
       "description": "Gelen kutusundaki son 10 e-postayı analiz eder ve içeriklerini özetleyerek kullanıcıya sunar.",
@@ -127,6 +190,260 @@
       "details": {
         "demo": true
       }
+    },
+    {
+      "id": "run_2923a617-f217-4b47-8eb5-456160d16594",
+      "taskId": "task_telegram_discord_1778073525467",
+      "eventId": null,
+      "status": "success",
+      "platform": "system",
+      "actionPlatform": "discord",
+      "confidence": null,
+      "summary": "\"Telegram destek mesajlarini Discorda gonder\" gorevi onaylandi ve aktif edildi.",
+      "reason": "Kullanici onayi ile gorev active durumuna alindi.",
+      "createdAt": "2026-05-06T13:18:51.502Z",
+      "details": {
+        "source": "approval",
+        "task": {
+          "id": "task_telegram_discord_1778073525467",
+          "title": "Telegram destek mesajlarini Discorda gonder",
+          "description": "Telegramdan gelen destek veya sikayet mesajlarini Discord destek kanalina iletir.",
+          "sourcePlatform": "telegram",
+          "triggerType": "triggered",
+          "condition": "Telegramdan gelen mesaj destek talebi veya sikayet anlami tasiyorsa eslesir.",
+          "category": "Destek",
+          "action": {
+            "type": "send_message",
+            "platform": "discord",
+            "target": "#destek",
+            "textTemplate": "Yeni Telegram destek mesaji:\nKullanici: {{senderName}}\nMesaj: {{text}}"
+          },
+          "approvalRequired": true,
+          "status": "active",
+          "maxAttempts": 3,
+          "missingFields": [],
+          "createdAt": "2026-05-06T13:18:45.468Z",
+          "updatedAt": "2026-05-06T13:18:51.502Z"
+        }
+      }
+    },
+    {
+      "id": "run_7e0540e5-3017-4a2e-8ad8-d9fb67f88ef4",
+      "taskId": "task_telegram_discord_1778073525467",
+      "eventId": "telegram_demo_1",
+      "status": "success",
+      "platform": "telegram",
+      "actionPlatform": "discord",
+      "confidence": 0.82,
+      "summary": "Event task_telegram_discord_1778073525467 goreviyle eslesti.",
+      "reason": "Demo fallback aktif: event platformu aktif gorevin kaynak platformuyla uyumlu.",
+      "createdAt": "2026-05-06T13:19:10.244Z",
+      "details": {
+        "event": {
+          "eventId": "telegram_demo_1",
+          "platform": "telegram",
+          "eventType": "message.created",
+          "direction": "inbound",
+          "conversationId": "demo_chat",
+          "senderId": "demo_user",
+          "senderName": "Demo User",
+          "text": "Kargom 3 gundur gelmedi, destek istiyorum.",
+          "subject": null,
+          "timestamp": "2026-05-06T13:00:00.000Z",
+          "raw": {}
+        },
+        "decision": {
+          "matched": true,
+          "taskId": "task_telegram_discord_1778073525467",
+          "confidence": 0.82,
+          "reason": "Demo fallback aktif: event platformu aktif gorevin kaynak platformuyla uyumlu.",
+          "needsApproval": false,
+          "action": {
+            "type": "send_message",
+            "platform": "discord",
+            "target": "#destek",
+            "text": "Yeni Telegram destek mesaji:\nKullanici: Demo User\nMesaj: Kargom 3 gundur gelmedi, destek istiyorum."
+          }
+        }
+      }
+    },
+    {
+      "id": "run_df3d627b-10eb-4b89-95a1-a4c5757b4786",
+      "taskId": "task_telegram_discord_1778073582203",
+      "eventId": null,
+      "status": "success",
+      "platform": "system",
+      "actionPlatform": "discord",
+      "confidence": null,
+      "summary": "\"Telegram destek mesajlarini Discorda gonder\" gorevi onaylandi ve aktif edildi.",
+      "reason": "Kullanici onayi ile gorev active durumuna alindi.",
+      "createdAt": "2026-05-06T13:19:42.212Z",
+      "details": {
+        "source": "approval",
+        "task": {
+          "id": "task_telegram_discord_1778073582203",
+          "title": "Telegram destek mesajlarini Discorda gonder",
+          "description": "Telegramdan gelen destek veya sikayet mesajlarini Discord destek kanalina iletir.",
+          "sourcePlatform": "telegram",
+          "triggerType": "triggered",
+          "condition": "Telegramdan gelen mesaj destek talebi veya sikayet anlami tasiyorsa eslesir.",
+          "category": "Destek",
+          "action": {
+            "type": "send_message",
+            "platform": "discord",
+            "target": "#destek",
+            "textTemplate": "Yeni Telegram destek mesaji:\nKullanici: {{senderName}}\nMesaj: {{text}}"
+          },
+          "approvalRequired": true,
+          "status": "active",
+          "maxAttempts": 3,
+          "missingFields": [],
+          "createdAt": "2026-05-06T13:19:42.203Z",
+          "updatedAt": "2026-05-06T13:19:42.212Z"
+        }
+      }
+    },
+    {
+      "id": "run_299ac71c-dff8-4b0b-a0cc-70094fbe9b48",
+      "taskId": "task_telegram_discord_1778073582203",
+      "eventId": "telegram_demo_1",
+      "status": "success",
+      "platform": "telegram",
+      "actionPlatform": "discord",
+      "confidence": 0.82,
+      "summary": "Event task_telegram_discord_1778073582203 goreviyle eslesti.",
+      "reason": "Demo fallback aktif: event platformu aktif gorevin kaynak platformuyla uyumlu.",
+      "createdAt": "2026-05-06T13:19:42.221Z",
+      "details": {
+        "event": {
+          "eventId": "telegram_demo_1",
+          "platform": "telegram",
+          "eventType": "message.created",
+          "direction": "inbound",
+          "conversationId": "demo_chat",
+          "senderId": "demo_user",
+          "senderName": "Demo User",
+          "text": "Kargom 3 gundur gelmedi, destek istiyorum.",
+          "subject": null,
+          "timestamp": "2026-05-06T13:00:00.000Z",
+          "raw": {}
+        },
+        "decision": {
+          "matched": true,
+          "taskId": "task_telegram_discord_1778073582203",
+          "confidence": 0.82,
+          "reason": "Demo fallback aktif: event platformu aktif gorevin kaynak platformuyla uyumlu.",
+          "needsApproval": false,
+          "action": {
+            "type": "send_message",
+            "platform": "discord",
+            "target": "#destek",
+            "text": "Yeni Telegram destek mesaji:\nKullanici: Demo User\nMesaj: Kargom 3 gundur gelmedi, destek istiyorum."
+          }
+        }
+      }
+    },
+    {
+      "id": "run_5797610f-efe1-4db3-ae25-40251b0f5b6e",
+      "taskId": "task_telegram_discord_1778073582203",
+      "eventId": "telegram_demo_1",
+      "status": "success",
+      "platform": "telegram",
+      "actionPlatform": "discord",
+      "confidence": 0.91,
+      "summary": "Discord mesaji gonderildi.",
+      "reason": "n8n action basarili.",
+      "createdAt": "2026-05-06T13:19:42.239Z",
+      "details": {}
+    },
+    {
+      "id": "run_beff5d23-2641-4aa1-a87e-e40939febb75",
+      "taskId": "task_telegram_discord_1778073665465",
+      "eventId": null,
+      "status": "success",
+      "platform": "system",
+      "actionPlatform": "discord",
+      "confidence": null,
+      "summary": "\"Telegram destek mesajlarini Discorda gonder\" gorevi onaylandi ve aktif edildi.",
+      "reason": "Kullanici onayi ile gorev active durumuna alindi.",
+      "createdAt": "2026-05-06T13:21:05.505Z",
+      "details": {
+        "source": "approval",
+        "task": {
+          "id": "task_telegram_discord_1778073665465",
+          "title": "Telegram destek mesajlarini Discorda gonder",
+          "description": "Telegramdan gelen destek veya sikayet mesajlarini Discord destek kanalina iletir.",
+          "sourcePlatform": "telegram",
+          "triggerType": "triggered",
+          "condition": "Telegramdan gelen mesaj destek talebi veya sikayet anlami tasiyorsa eslesir.",
+          "category": "Destek",
+          "action": {
+            "type": "send_message",
+            "platform": "discord",
+            "target": "#destek",
+            "textTemplate": "Yeni Telegram destek mesaji:\nKullanici: {{senderName}}\nMesaj: {{text}}"
+          },
+          "approvalRequired": true,
+          "status": "active",
+          "maxAttempts": 3,
+          "missingFields": [],
+          "createdAt": "2026-05-06T13:21:05.467Z",
+          "updatedAt": "2026-05-06T13:21:05.505Z"
+        }
+      }
+    },
+    {
+      "id": "run_8842bfa8-f3f8-4b74-8e5b-d8db9d527c61",
+      "taskId": "task_telegram_discord_1778073665465",
+      "eventId": "telegram_demo_1",
+      "status": "success",
+      "platform": "telegram",
+      "actionPlatform": "discord",
+      "confidence": 0.82,
+      "summary": "Event task_telegram_discord_1778073665465 goreviyle eslesti.",
+      "reason": "Demo fallback aktif: event platformu aktif gorevin kaynak platformuyla uyumlu.",
+      "createdAt": "2026-05-06T13:21:05.574Z",
+      "details": {
+        "event": {
+          "eventId": "telegram_demo_1",
+          "platform": "telegram",
+          "eventType": "message.created",
+          "direction": "inbound",
+          "conversationId": "demo_chat",
+          "senderId": "demo_user",
+          "senderName": "Demo User",
+          "text": "Kargom 3 gundur gelmedi, destek istiyorum.",
+          "subject": null,
+          "timestamp": "2026-05-06T13:00:00.000Z",
+          "raw": {}
+        },
+        "decision": {
+          "matched": true,
+          "taskId": "task_telegram_discord_1778073665465",
+          "confidence": 0.82,
+          "reason": "Demo fallback aktif: event platformu aktif gorevin kaynak platformuyla uyumlu.",
+          "needsApproval": false,
+          "action": {
+            "type": "send_message",
+            "platform": "discord",
+            "target": "#destek",
+            "text": "Yeni Telegram destek mesaji:\nKullanici: Demo User\nMesaj: Kargom 3 gundur gelmedi, destek istiyorum."
+          }
+        }
+      }
+    },
+    {
+      "id": "run_38314653-09c4-4b03-b24e-058d52e88aa4",
+      "taskId": "task_telegram_discord_1778073665465",
+      "eventId": "telegram_demo_1",
+      "status": "success",
+      "platform": "telegram",
+      "actionPlatform": "discord",
+      "confidence": 0.91,
+      "summary": "Discord mesaji gonderildi.",
+      "reason": "n8n action basarili.",
+      "createdAt": "2026-05-06T13:21:05.654Z",
+      "details": {}
     }
   ]
 }
