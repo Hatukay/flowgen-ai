@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI FlowOps Demo</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --panel: #f8fafc;
+        --line: #e2e8f0;
+        --ink: #111827;
+        --muted: #64748b;
+        --blue: #2563eb;
+        --green: #059669;
+        --amber: #d97706;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .app {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 280px;
+        border-right: 1px solid var(--line);
+        background: #fff;
+        padding: 20px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--blue);
+        color: #fff;
+        font-weight: 800;
+      }
+
+      .brand-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .brand-subtitle,
+      .muted {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .nav {
+        display: grid;
+        gap: 6px;
+      }
+
+      .nav button {
+        min-height: 44px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #475569;
+        font-weight: 700;
+        text-align: left;
+        padding: 0 12px;
+      }
+
+      .nav button:first-child {
+        background: #eff6ff;
+        color: #1d4ed8;
+      }
+
+      .main {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.95);
+        padding: 14px 20px;
+      }
+
+      .topbar h1 {
+        margin: 0 0 3px;
+        font-size: 14px;
+      }
+
+      .badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .badge {
+        display: inline-flex;
+        min-height: 28px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fff;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 800;
+        padding: 0 10px;
+      }
+
+      .badge.blue {
+        border-color: #bfdbfe;
+        background: #eff6ff;
+        color: #1d4ed8;
+      }
+
+      .badge.green {
+        border-color: #a7f3d0;
+        background: #ecfdf5;
+        color: #047857;
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 20px;
+        padding: 20px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 20px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid var(--line);
+        padding: 16px 20px;
+      }
+
+      .card-header h2,
+      .side-title {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .chips button,
+      .secondary {
+        min-height: 40px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 800;
+        padding: 0 12px;
+      }
+
+      .chat-log {
+        display: grid;
+        gap: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 16px;
+      }
+
+      .bubble {
+        max-width: 88%;
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .bubble.user {
+        justify-self: end;
+        background: var(--blue);
+        color: #fff;
+        font-weight: 700;
+      }
+
+      .bubble.ai {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: #475569;
+      }
+
+      .chat-form {
+        display: flex;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .chat-form input {
+        min-height: 44px;
+        flex: 1;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 14px;
+      }
+
+      .primary {
+        min-height: 44px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--blue);
+        color: #fff;
+        font-weight: 800;
+        padding: 0 18px;
+      }
+
+      .primary:disabled {
+        background: #cbd5e1;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .meta {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 12px;
+      }
+
+      .meta span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .meta strong {
+        display: block;
+        margin-top: 6px;
+        overflow-wrap: anywhere;
+        font-size: 13px;
+      }
+
+      .plan-steps {
+        display: grid;
+        gap: 10px;
+        padding: 0;
+        margin: 18px 0 0;
+        list-style: none;
+      }
+
+      .plan-steps li {
+        display: flex;
+        gap: 10px;
+        color: #475569;
+        font-size: 14px;
+      }
+
+      .step-no {
+        display: grid;
+        width: 24px;
+        height: 24px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 6px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        border-top: 1px solid var(--line);
+        margin-top: 20px;
+        padding-top: 20px;
+      }
+
+      .metric-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .metric {
+        display: flex;
+        justify-content: space-between;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 14px;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 26px;
+      }
+
+      .list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .list-row {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 12px;
+      }
+
+      .list-row p {
+        margin: 0 0 8px;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .check {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        padding: 11px;
+        color: #334155;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .check span {
+        color: var(--green);
+        font-weight: 900;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(15, 23, 42, 0.45);
+        padding: 18px;
+      }
+
+      .modal.open {
+        display: flex;
+      }
+
+      .modal-dialog {
+        width: min(540px, 100%);
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.22);
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        border-top: 1px solid var(--line);
+        background: var(--panel);
+        padding: 16px 20px;
+      }
+
+      @media (max-width: 1100px) {
+        .content {
+          grid-template-columns: 1fr;
+        }
+
+        .metric-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 780px) {
+        .sidebar {
+          display: none;
+        }
+
+        .topbar,
+        .chat-form,
+        .card-header {
+          flex-direction: column;
+        }
+
+        .meta-grid,
+        .metric-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">AI</div>
+          <div>
+            <p class="brand-title">AI FlowOps</p>
+            <span class="brand-subtitle">n8n Agent Console</span>
+          </div>
+        </div>
+        <nav class="nav">
+          <button>Yeni Görev</button>
+          <button>Eski Görevler</button>
+          <button>Aktif Görevler</button>
+          <button>Template’ler</button>
+          <button>Test Raporları</button>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <h1>AI FlowOps Demo Console</h1>
+            <span class="muted">Chat ile görev planla, onayla, n8n akış sonucunu izle.</span>
+          </div>
+          <div class="badges">
+            <span class="badge blue">Demo Mode</span>
+            <span class="badge green">n8n Local: 5678</span>
+            <span class="badge">Backend API / Mock hazır</span>
+            <span class="badge">Demo Workspace</span>
+          </div>
+        </header>
+
+        <div class="content">
+          <section class="stack">
+            <section class="card">
+              <div class="card-header">
+                <div>
+                  <h2>Yeni görev oluştur</h2>
+                  <span class="muted">Doğal dilde yaz, AI planlasın, sen onayla.</span>
+                </div>
+                <span class="badge blue">AI Planner</span>
+              </div>
+              <div class="card-body">
+                <div class="chips">
+                  <button data-prompt="Telegram şikayetlerini Slack’e gönder">Telegram şikayetlerini Slack’e gönder</button>
+                  <button data-prompt="Son 10 maili özetle">Son 10 maili özetle</button>
+                  <button data-prompt="Ödeme tarihi yaklaşan maili bul">Ödeme tarihi yaklaşan maili bul</button>
+                </div>
+                <div class="chat-log">
+                  <div class="bubble user" id="userBubble">
+                    Telegramdan gelen şikayet mesajlarını Slack destek birimine gönder.
+                  </div>
+                  <div class="bubble ai" id="aiBubble">
+                    <strong>Plan hazır:</strong> telegram_to_slack_complaint template’i seçildi.
+                  </div>
+                </div>
+                <form class="chat-form" id="chatForm">
+                  <input
+                    id="messageInput"
+                    value="Telegramdan gelen şikayet mesajlarını Slack destek birimine gönder."
+                    placeholder="Örn: Son 10 mailimi özetle"
+                  />
+                  <button class="primary" id="sendButton" type="submit">Gönder</button>
+                </form>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-header">
+                <div>
+                  <span class="badge blue">Approval Layer</span>
+                  <span class="badge" id="statusBadge">Onay bekliyor</span>
+                  <h2 id="planTitle" style="margin-top: 12px">Telegram şikayetlerini Slack destek kanalına gönder</h2>
+                  <span class="muted" id="planDescription">
+                    Telegramdan gelen şikayet mesajlarını Slack destek kanalına iletir.
+                  </span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="meta-grid">
+                  <div class="meta"><span>Kategori</span><strong id="category">Destek</strong></div>
+                  <div class="meta"><span>Tip</span><strong id="triggerType">Tetiklenmeli</strong></div>
+                  <div class="meta"><span>Kaynak</span><strong id="source">Telegram</strong></div>
+                  <div class="meta"><span>Hedef</span><strong id="target">Slack</strong></div>
+                  <div class="meta"><span>Template</span><strong id="template">telegram_to_slack_complaint</strong></div>
+                </div>
+                <ol class="plan-steps" id="planSteps"></ol>
+                <div class="actions">
+                  <button class="primary" id="approveButton">Onayla ve Aktifleştir</button>
+                  <button class="secondary" id="testButton">Test Et</button>
+                  <button class="secondary">Düzenle</button>
+                </div>
+              </div>
+            </section>
+
+            <div class="content" style="grid-template-columns: 1fr 1fr; padding: 0">
+              <section class="card">
+                <div class="card-body">
+                  <h2 class="side-title">Son gerçekleşen görevler</h2>
+                  <p class="muted">Run kayıtları ve demo çıktıları</p>
+                  <div class="list" id="runsList" style="margin-top: 16px"></div>
+                </div>
+              </section>
+              <section class="card">
+                <div class="card-body">
+                  <h2 class="side-title">Aktif görevler</h2>
+                  <p class="muted">n8n template bağlantılı akışlar</p>
+                  <div class="list" id="tasksList" style="margin-top: 16px"></div>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <aside class="stack">
+            <section class="card">
+              <div class="card-body">
+                <h2 class="side-title">Dashboard</h2>
+                <p class="muted">Görev, run ve test görünümü</p>
+                <div class="metric-grid" style="margin-top: 16px">
+                  <div class="metric"><span>Aktif Görevler<strong id="activeCount">3</strong></span></div>
+                  <div class="metric"><span>Onay Bekleyen<strong id="pendingCount">1</strong></span></div>
+                  <div class="metric"><span>Bugünkü Çalışmalar<strong id="runCount">5</strong></span></div>
+                  <div class="metric"><span>Başarılı Testler<strong id="testCount">2/3</strong></span></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-body">
+                <h2 class="side-title">AI Test Agent</h2>
+                <p class="muted">Template, izin ve hedef kontrolü</p>
+                <div id="checks" style="margin-top: 16px"></div>
+                <div class="list-row" id="feedback">Test Et butonu ile canlı kontrol sonucu burada görünecek.</div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal" id="approvalModal">
+      <div class="modal-dialog">
+        <div class="card-header">
+          <div>
+            <h2>Görevi aktifleştir</h2>
+            <span class="muted">Bu görev Telegram mesajlarını okuyacak ve Slack kanalına mesaj gönderecek.</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="list">
+            <div class="list-row"><strong>Kaynak:</strong> <span id="modalSource">Telegram</span></div>
+            <div class="list-row"><strong>Hedef:</strong> <span id="modalTarget">Slack</span></div>
+            <div class="list-row"><strong>Kategori:</strong> <span id="modalCategory">Destek</span></div>
+            <div class="list-row"><strong>Tetikleme:</strong> Her yeni Telegram mesajında</div>
+            <div class="list-row"><strong>n8n Template:</strong> <span id="modalTemplate">telegram_to_slack_complaint</span></div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="secondary" id="cancelApprove">Vazgeç</button>
+          <button class="primary" id="confirmApprove">Onayla</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const steps = {
+        telegram: [
+          "Telegram mesajlarını dinle",
+          "Şikayet içeren mesajları sınıflandır",
+          "Slack destek kanalına formatlı mesaj gönder",
+          "Backend’e run kaydı oluştur",
+          "Dashboard’da sonucu göster",
+        ],
+        mail: [
+          "Mail listesinden son 10 mesajı al",
+          "Mesajları konu, gönderen ve aksiyonlara göre özetle",
+          "Özeti Slack kanalına gönder",
+          "Backend’e run kaydı oluştur",
+        ],
+        payment: [
+          "Mail içeriklerinde ödeme tarihi ara",
+          "AI ile tarih ve tutar bilgisini çıkar",
+          "Yaklaşan tarih varsa hatırlatma planla",
+          "Sonucu dashboard’a kaydet",
+        ],
+      };
+
+      const state = {
+        active: 3,
+        pending: 1,
+        runs: [
+          ["Ödeme hatırlatıcısı planlandı.", "Test edildi"],
+          ["Son 10 mail özetlendi.", "Başarılı"],
+          ["Telegram şikayeti Slack’e gönderildi.", "Başarılı"],
+          ["Mail özet akışı mock data ile test edildi.", "Başarılı"],
+          ["Ödeme tarihi çıkarımı test edildi.", "Kısmi"],
+        ],
+        tasks: [
+          "Mail Özetleme",
+          "Ödeme Hatırlatma",
+          "HR aday bilgilendirme mesajlarını sırala",
+        ],
+        plan: makePlan("telegram"),
+      };
+
+      function makePlan(kind) {
+        if (kind === "mail") {
+          return {
+            title: "Son 10 maili özetle",
+            description: "Mail kutusundaki son 10 mesajı özetleyip seçili kanala gönderir.",
+            category: "Mail",
+            triggerType: "Anlık",
+            source: "Mail",
+            target: "Slack",
+            template: "mail_summary",
+            steps: steps.mail,
+            run: "Son 10 mail özetlendi.",
+          };
+        }
+        if (kind === "payment") {
+          return {
+            title: "Ödeme tarihi yaklaşan maili bul ve hatırlat",
+            description: "Mail içinden ödeme tarihlerini çıkarır ve hatırlatma akışı başlatır.",
+            category: "Ödeme",
+            triggerType: "Planlı",
+            source: "Mail",
+            target: "Telegram",
+            template: "payment_reminder",
+            steps: steps.payment,
+            run: "Ödeme hatırlatıcısı planlandı.",
+          };
+        }
+        return {
+          title: "Telegram şikayetlerini Slack destek kanalına gönder",
+          description: "Telegramdan gelen şikayet mesajlarını Slack destek kanalına iletir.",
+          category: "Destek",
+          triggerType: "Tetiklenmeli",
+          source: "Telegram",
+          target: "Slack",
+          template: "telegram_to_slack_complaint",
+          steps: steps.telegram,
+          run: "Telegram mesajı Slack destek kanalına gönderildi.",
+        };
+      }
+
+      function chooseKind(message) {
+        const text = message.toLocaleLowerCase("tr-TR");
+        if (text.includes("mail") && text.includes("özet")) return "mail";
+        if (text.includes("ödeme") || text.includes("hatırlat")) return "payment";
+        return "telegram";
+      }
+
+      function render() {
+        document.getElementById("planTitle").textContent = state.plan.title;
+        document.getElementById("planDescription").textContent = state.plan.description;
+        document.getElementById("category").textContent = state.plan.category;
+        document.getElementById("triggerType").textContent = state.plan.triggerType;
+        document.getElementById("source").textContent = state.plan.source;
+        document.getElementById("target").textContent = state.plan.target;
+        document.getElementById("template").textContent = state.plan.template;
+        document.getElementById("modalSource").textContent = state.plan.source;
+        document.getElementById("modalTarget").textContent = state.plan.target;
+        document.getElementById("modalCategory").textContent = state.plan.category;
+        document.getElementById("modalTemplate").textContent = state.plan.template;
+
+        document.getElementById("planSteps").innerHTML = state.plan.steps
+          .map((step, index) => `<li><span class="step-no">${index + 1}</span><span>${step}</span></li>`)
+          .join("");
+
+        document.getElementById("runsList").innerHTML = state.runs
+          .map(([summary, status]) => `<div class="list-row"><p>${summary}</p><span class="badge green">${status}</span></div>`)
+          .join("");
+
+        document.getElementById("tasksList").innerHTML = state.tasks
+          .map((task) => `<div class="list-row"><p>${task}</p><span class="badge green">Aktif</span></div>`)
+          .join("");
+
+        document.getElementById("activeCount").textContent = state.active;
+        document.getElementById("pendingCount").textContent = state.pending;
+        document.getElementById("runCount").textContent = state.runs.length;
+      }
+
+      function renderChecks(passed = false) {
+        const checks = [
+          "Template seçildi",
+          "Kaynak ve hedef tanımlı",
+          "Onay mekanizması aktif",
+          "Slack hedefi tanımlı",
+          "Test mesajı başarıyla işlendi",
+        ];
+        document.getElementById("checks").innerHTML = checks
+          .map((check) => `<div class="check"><span>${passed ? "✓" : "•"}</span>${check}</div>`)
+          .join("");
+        document.getElementById("feedback").textContent = passed
+          ? "Görev güvenli şekilde aktifleştirilebilir."
+          : "Test Et butonu ile canlı kontrol sonucu burada görünecek.";
+        document.getElementById("testCount").textContent = passed ? "3/3" : "2/3";
+      }
+
+      document.getElementById("chatForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const input = document.getElementById("messageInput");
+        const message = input.value.trim();
+        if (!message) return;
+
+        document.getElementById("userBubble").textContent = message;
+        document.getElementById("aiBubble").textContent = "AI görevi analiz ediyor";
+        document.getElementById("sendButton").disabled = true;
+
+        window.setTimeout(() => {
+          state.plan = makePlan(chooseKind(message));
+          state.pending = 1;
+          document.getElementById("statusBadge").textContent = "Onay bekliyor";
+          document.getElementById("approveButton").disabled = false;
+          document.getElementById("approveButton").textContent = "Onayla ve Aktifleştir";
+          document.getElementById("aiBubble").innerHTML =
+            `<strong>Plan hazır:</strong> ${state.plan.template} template’i seçildi.`;
+          document.getElementById("sendButton").disabled = false;
+          render();
+          renderChecks(false);
+          input.value = "";
+        }, 600);
+      });
+
+      document.querySelectorAll("[data-prompt]").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.getElementById("messageInput").value = button.dataset.prompt;
+          document.getElementById("chatForm").requestSubmit();
+        });
+      });
+
+      document.getElementById("approveButton").addEventListener("click", () => {
+        document.getElementById("approvalModal").classList.add("open");
+      });
+
+      document.getElementById("cancelApprove").addEventListener("click", () => {
+        document.getElementById("approvalModal").classList.remove("open");
+      });
+
+      document.getElementById("confirmApprove").addEventListener("click", () => {
+        document.getElementById("approvalModal").classList.remove("open");
+        state.pending = 0;
+        state.active += 1;
+        state.runs.unshift([state.plan.run, "Başarılı"]);
+        state.tasks.unshift(state.plan.title);
+        document.getElementById("statusBadge").textContent = "Aktif";
+        document.getElementById("approveButton").disabled = true;
+        document.getElementById("approveButton").textContent = "Aktifleştirildi";
+        render();
+        renderChecks(true);
+      });
+
+      document.getElementById("testButton").addEventListener("click", () => {
+        document.getElementById("feedback").textContent = "AI Test Agent kontrol ediyor...";
+        window.setTimeout(() => renderChecks(true), 450);
+      });
+
+      render();
+      renderChecks(false);
+    </script>
+  </body>
+</html>
