@@ -141,8 +141,8 @@ const testTask = (req, res) => {
         detail: task.sourcePlatform || 'sourcePlatform eksik.',
       },
       {
-        name: 'Status active',
-        result: task.status === 'active' ? 'passed' : 'failed',
+        name: 'Onay mekanizmasi aktif',
+        result: ['waiting_approval', 'active'].includes(task.status) ? 'passed' : 'failed',
         detail: `Gorev durumu: ${task.status}`,
       },
       {

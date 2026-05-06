@@ -18,7 +18,7 @@ function wait(ms) {
 function successSummaryFor(task) {
   if (task.action?.type === "summarize") return "Son 10 mail ozetlendi.";
   if (task.action?.type === "create_reminder") return "Odeme hatirlaticisi planlandi.";
-  return "Telegram mesaji Discord destek kanalina gonderildi.";
+  return `${task.sourcePlatform || "system"} eventi ${task.action?.platform || "dashboard"} aksiyonuna donustu.`;
 }
 
 function upsertTask(tasks, nextTask) {
@@ -82,16 +82,18 @@ export default function App() {
     const approved = await approveTask(task.id);
     const activeTask = {
       ...task,
-      ...approved,
+      ...approved.task,
       status: "active",
     };
+    const backendRun = approved.run;
 
     setCurrentPlan((previous) => ({ ...previous, task: activeTask }));
     setTasks((previous) => upsertTask(previous, activeTask));
     setRuns((previous) => [
-      {
+      backendRun || {
         id: `run_${Date.now()}`,
         taskId: activeTask.id,
+        matchedTaskId: activeTask.id,
         eventId: null,
         status: "success",
         platform: "system",

@@ -109,7 +109,7 @@ export const mockTestResult = {
     { name: "Task schema dogru", result: "passed" },
     { name: "Action var", result: "passed" },
     { name: "Source platform var", result: "passed" },
-    { name: "Status active", result: "passed" },
+    { name: "Onay mekanizmasi aktif", result: "passed" },
     { name: "LLM decision test edilebilir", result: "passed" },
   ],
   aiFeedback: "Gorev n8n event akisi icin test edilebilir durumda.",

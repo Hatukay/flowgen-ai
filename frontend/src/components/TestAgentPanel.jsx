@@ -5,7 +5,7 @@ const pendingChecks = [
   { name: "Task schema dogru", result: "ready" },
   { name: "Action var", result: "ready" },
   { name: "Source platform var", result: "ready" },
-  { name: "Status active", result: "ready" },
+  { name: "Onay mekanizmasi aktif", result: "ready" },
   { name: "LLM decision test edilebilir", result: "ready" },
 ];
 
